@@ -1,25 +1,29 @@
-version: '2'
-services:
-    frontend:
-      image: nebelmahr/promfront:001
+name: ci
 
-      ports:
-       - "5001:80"
+on:
+  push:
+    branches:
+      - 'main'
 
-    backend:
-     image: nebelmahr/promgraf:002  
-     ports: 
-       - "5002:5002"
-    
-     mysql:
-    container_name: flask_mysql
-    restart: always
-    image: mysql:latest
-    environment:
-      MYSQL_ROOT_PASSWORD: 'test_pass' # TODO: Change this
-      MYSQL_USER: 'test'
-      MYSQL_PASS: 'pass'
-    volumes:
-      - my-datavolume:/var/lib/mysql
-volumes:
-  my-datavolume:
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          tags:  HappyNebelmahr /githubworks:${{github.run_number}} 
